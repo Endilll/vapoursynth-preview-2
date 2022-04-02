@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(vapoursynth-preview-2)
+project(vapoursynth-preview-2 CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
@@ -25,6 +25,7 @@ FetchContent_Declare(
     GIT_SHALLOW on
     GIT_PROGRESS on
 )
+set(ELEMENTS_BUILD_EXAMPLES off)
 FetchContent_MakeAvailable(elements)
 
 target_link_libraries(vapoursynth-preview-2 PRIVATE cycfi::elements)

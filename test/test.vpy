@@ -1,12 +1,5 @@
 import vapoursynth as vs
 from vapoursynth import core
 
-core.max_cache_size = 4000
-source = core.ffms2.Source(r'../test/test.mp4')
-
-def sobel_mask(clip: vs.VideoNode, thr: int = 40) -> vs.VideoNode:
-    sob = core.std.ShufflePlanes(clip, 0, vs.GRAY).std.Sobel()
-    return sob.std.Expr(f'x {thr} < 0 x ?')
-
-#sobel_mask(source).set_output(0)
+source = core.std.BlankClip(width=1280, height=720, color=(40, 180, 0), format=vs.YUV420P8, length=1000, fpsnum=24000, fpsden=1001)
 source.set_output(0)

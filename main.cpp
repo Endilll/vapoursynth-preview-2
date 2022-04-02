@@ -10,15 +10,13 @@ int main(int argc, char** argv)
         // Init variables
         int default_frame_number = 0;
         const char *script_file_path{[&] {
-            return argv[1] ? argv[1] : throw std::runtime_error{"VSPreview error: Script file not specified"};
+            return argc >= 2 ? argv[1] : throw std::runtime_error{"VSPreview error: Script file not specified"};
         }()};
         int frame_number{[&] {
-            if (!argv[2]) {
+            if (argc < 3) {
                 return default_frame_number;
             }
-            std::stringstream str{argv[2]};
-            int number;
-            str >> number;
+            int number{std::stoi(argv[2])};
             return number >= 0 ? number : default_frame_number;
         }()};
 
@@ -37,7 +35,6 @@ int main(int argc, char** argv)
             return ptr ? ptr : throw std::runtime_error{"VSPreview error: Script creating error"};
         }()};
         vs_script_api->evaluateFile(vs_script, script_file_path);
-        VSCore *vs_core = vs_script_api->getCore(vs_script);
         VSNode *video_node{[&] {
             VSNode *ptr{vs_script_api->getOutputNode(vs_script, 0)};
             return ptr ? ptr : throw std::runtime_error{vs_script_api->getError(vs_script)};
@@ -50,6 +47,7 @@ int main(int argc, char** argv)
         }
 
         // Convert video format to RGB24
+        VSCore *vs_core = vs_script_api->getCore(vs_script);
         VSPlugin *pResizePlugin{vs_api->getPluginByID("com.vapoursynth.resize", vs_core)};
         VSMap *pArgumentMap{vs_api->createMap()};
         vs_api->mapSetNode(pArgumentMap, "clip", video_node, 0);
@@ -97,7 +95,7 @@ int main(int argc, char** argv)
         view view_(_win);
 
         view_.content(
-                image{pixmap_ptr{&pixmap}}
+            image{pixmap_ptr{&pixmap}}
         );
 
         _app.run();

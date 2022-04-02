@@ -6,7 +6,7 @@
 mkdir build
 cd build
 cmake ../
-make vapoursynth-preview-2
+cmake --build .
 ```
 
 ## Running PoC

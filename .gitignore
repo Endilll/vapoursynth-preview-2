@@ -1,5 +1,1 @@
-/.idea
-/build
-/cmake-build-debug
-/test/*
-!/test/*.vpy
+/*build*/
