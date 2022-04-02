@@ -13,7 +13,6 @@ using namespace cycfi::elements;
 int main(int argc, char** argv)
 {
     try {
-        // Init variables
         int default_frame_number{0};
         const char* script_file_path{[&] {
             return argc >= 2 ? argv[1] : throw std::invalid_argument{"VSPreview error: Script file not specified"};
@@ -71,7 +70,7 @@ int main(int argc, char** argv)
         const VSFrame* video_frame{vs_api->getFrame(frame_number, pPreviewNode, nullptr, 0)};
 
 
-        // Prepare frame for elements
+        // Prepare video frame for elements
         int frame_width{vs_api->getFrameWidth(video_frame, 0)};
         int frame_height{vs_api->getFrameHeight(video_frame, 0)};
         const uint8_t* frame_raw_plane_red{vs_api->getReadPtr(video_frame, 0)};
@@ -111,7 +110,6 @@ int main(int argc, char** argv)
 
         _app.run();
 
-        // Free VS script
         vs_script_api->freeScript(vs_script);
     } catch (std::exception &exception) {
         std::cout << exception.what() << std::endl;

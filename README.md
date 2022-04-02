@@ -12,5 +12,5 @@ cmake --build .
 ## Running PoC
 
 ```shell
-vapoursynth-preview-2 vs_script_file [frame_number]
+vapoursynth-preview-2 script_file_path [frame_number]
 ``` 
