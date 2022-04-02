@@ -23,7 +23,6 @@ FetchContent_Declare(
     GIT_TAG ae7b87a8cc53258fac7d1d5a7b96da2994116dcf
     GIT_SUBMODULES_RECURSE on
     GIT_SHALLOW on
-    GIT_PROGRESS on
 )
 set(ELEMENTS_BUILD_EXAMPLES off)
 FetchContent_MakeAvailable(elements)
