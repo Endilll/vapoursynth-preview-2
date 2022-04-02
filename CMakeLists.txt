@@ -29,10 +29,10 @@ FetchContent_MakeAvailable(elements)
 
 target_link_libraries(vapoursynth-preview-2 PRIVATE cycfi::elements)
 if(APPLE)
+    target_link_libraries(vapoursynth-preview-2 PRIVATE "-framework AppKit")
     target_link_libraries(vapoursynth-preview-2 PRIVATE "-framework CoreFoundation")
     target_link_libraries(vapoursynth-preview-2 PRIVATE "-framework CoreGraphics")
     target_link_libraries(vapoursynth-preview-2 PRIVATE "-framework CoreText")
-    target_link_libraries(vapoursynth-preview-2 PRIVATE "-framework AppKit")
 endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS on)
