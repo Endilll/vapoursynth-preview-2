@@ -1,6 +1,7 @@
 #include <elements.hpp>
 #include <VSScript4.h>
 
+#include <iostream>
 #include <string>
 
 using namespace cycfi::elements;
@@ -18,7 +19,7 @@ int main(int argc, char** argv)
                 return default_frame_number;
             }
             int number{std::stoi(argv[2])};
-            return number >= 0 ? number : default_frame_number;
+            return number >= 0 ? number : throw std::runtime_error{"VSPreview error: frame number must be a non-negative"};
         }()};
 
         // Init VS api and video data
@@ -42,9 +43,14 @@ int main(int argc, char** argv)
         }()};
 
         // Safe max frame number
-        int video_frame_quantity{vs_api->getVideoInfo(video_node)->numFrames};
-        if (frame_number >= video_frame_quantity) {
-            frame_number = video_frame_quantity;
+        int video_frames_quantity{vs_api->getVideoInfo(video_node)->numFrames};
+        if (video_frames_quantity <= frame_number) {
+            throw std::runtime_error{
+                "VSPreview error: frame number out of range. Selected frame: "
+                + std::to_string(frame_number)
+                + ". Max frame number: "
+                + std::to_string(video_frames_quantity-1)
+            };
         }
 
         // Convert video format to RGB24
