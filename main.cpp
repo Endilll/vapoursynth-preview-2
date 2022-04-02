@@ -89,11 +89,11 @@ int main(int argc, char** argv)
 
         // copy frame to pixmap context
         cairo_surface_flush(cairo_surface);
-        for (int i{0}; i < frame_width * frame_height * 4; i += 4) {
-            surface_data[i] = frame_raw_plane_blue[i / 4];
-            surface_data[i + 1] = frame_raw_plane_green[i / 4];
-            surface_data[i + 2] = frame_raw_plane_red[i / 4];
-            surface_data[i + 3] = 255; // Alpha
+        for (int i{0}; i < frame_width*frame_height*4; i += 4) {
+            surface_data[i] = frame_raw_plane_blue[i/4];
+            surface_data[i+1] = frame_raw_plane_green[i/4];
+            surface_data[i+2] = frame_raw_plane_red[i/4];
+            surface_data[i+3] = 255; // Alpha
         }
         cairo_surface_mark_dirty(cairo_surface);
 
