@@ -1,7 +1,11 @@
+#include <cairo.h>
 #include <elements.hpp>
+#include <VapourSynth4.h>
 #include <VSScript4.h>
 
+#include <exception>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 
 using namespace cycfi::elements;
@@ -12,14 +16,14 @@ int main(int argc, char** argv)
         // Init variables
         int default_frame_number{0};
         const char* script_file_path{[&] {
-            return argc >= 2 ? argv[1] : throw std::runtime_error{"VSPreview error: Script file not specified"};
+            return argc >= 2 ? argv[1] : throw std::invalid_argument{"VSPreview error: Script file not specified"};
         }()};
         int frame_number{[&] {
             if (argc < 3) {
                 return default_frame_number;
             }
             int number{std::stoi(argv[2])};
-            return number >= 0 ? number : throw std::runtime_error{"VSPreview error: frame number must be a non-negative"};
+            return number >= 0 ? number : throw std::invalid_argument{"VSPreview error: frame number must be a non-negative"};
         }()};
 
         // Init VS api and video data
@@ -45,7 +49,7 @@ int main(int argc, char** argv)
         // Safe max frame number
         int video_frames_quantity{vs_api->getVideoInfo(video_node)->numFrames};
         if (video_frames_quantity <= frame_number) {
-            throw std::runtime_error{
+            throw std::invalid_argument{
                 "VSPreview error: frame number out of range. Selected frame: "
                 + std::to_string(frame_number)
                 + ". Max frame number: "
