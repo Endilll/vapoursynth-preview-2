@@ -5,6 +5,7 @@
 
 #include <exception>
 #include <iostream>
+#include <memory>
 #include <stdexcept>
 #include <string>
 
@@ -79,8 +80,8 @@ int main(int argc, char** argv)
 
 
         // Init elements pixmap
-        pixmap pixmap{{static_cast<float>(frame_width), static_cast<float>(frame_height)}};
-        pixmap_context pixmap_context{pixmap};
+        pixmap_ptr pixmap_obj{std::make_shared<pixmap>(point{static_cast<float>(frame_width), static_cast<float>(frame_height)})};
+        pixmap_context pixmap_context{*pixmap_obj};
         cairo_t* cairo_context{pixmap_context.context()};
 
         cairo_surface_t* cairo_surface{cairo_get_target(cairo_context)};
@@ -105,7 +106,7 @@ int main(int argc, char** argv)
         view view_(_win);
 
         view_.content(
-            image{pixmap_ptr{&pixmap}}
+            image{pixmap_obj}
         );
 
         _app.run();
