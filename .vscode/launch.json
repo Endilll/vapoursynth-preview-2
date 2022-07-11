@@ -1,0 +1,34 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name":"Win",
+            "type":"cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceRoot}/build-win/vapoursynth-preview-2.exe",
+            "args": ["${workspaceRoot}/test/test.vpy"],
+            "cwd": "${workspaceRoot}/build-win",
+        },
+
+        {
+            "type": "cppdbg",
+            "request": "launch",
+            "name": "Debug",
+            "program": "${workspaceFolder}/build-linux/Debug/vapoursynth-preview-2",
+            "args": ["${workspaceFolder}/test/test.vpy"],
+            "MIMode": "gdb",
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": true,
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true,
+                }
+            ]
+        }
+    ]
+}

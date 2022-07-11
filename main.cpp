@@ -1,7 +1,8 @@
-#include <cairo.h>
+// #include <cairo.h>
 #include <elements.hpp>
-#include <VapourSynth4.h>
-#include <VSScript4.h>
+#include <gsl/util>
+#include <vapoursynth/VapourSynth4.h>
+#include <vapoursynth/VSScript4.h>
 
 #include <exception>
 #include <iostream>
@@ -39,6 +40,9 @@ int main(int argc, char** argv)
             VSScript* ptr{vs_script_api->createScript(nullptr)};
             return ptr ? ptr : throw std::runtime_error{"VSPreview error: Script creating error"};
         }()};
+        auto vs_script_finalizer{gsl::finally([&] {
+            vs_script_api->freeScript(vs_script);
+        })};
         vs_script_api->evaluateFile(vs_script, script_file_path);
         VSNode* video_node{[&] {
             VSNode* ptr{vs_script_api->getOutputNode(vs_script, 0)};
@@ -100,7 +104,7 @@ int main(int argc, char** argv)
         // Init elements and create image from pixmap
         app _app(argc, argv, "VapourSynth Preview 2", "com.endill.vapoursynth-preview-2");
         window _win(_app.name());
-        _win.on_close = [&_app]() { _app.stop(); };
+        _win.on_close = [&]() { _app.stop(); };
 
         view view_(_win);
 
@@ -109,8 +113,6 @@ int main(int argc, char** argv)
         );
 
         _app.run();
-
-        vs_script_api->freeScript(vs_script);
     } catch (std::exception &exception) {
         std::cout << exception.what() << std::endl;
     }

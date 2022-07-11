@@ -1,0 +1,15 @@
+{
+    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+    "name": "vapoursynth-preview-2",
+    "description": "Preview application for VapourSynth scripts",
+    "version-date": "2022-04-03",
+    "builtin-baseline": "8e1f46de11423e5f7d2395458f5252738ffffbbd",
+    "dependencies": [
+        "elements",
+        "ms-gsl",
+        {
+            "name": "vcpkg-cmake",
+            "host": true
+        }
+    ]
+}
