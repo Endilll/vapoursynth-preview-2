@@ -1,8 +1,8 @@
 // #include <cairo.h>
 #include <elements.hpp>
 #include <gsl/util>
-#include <vapoursynth/VapourSynth4.h>
-#include <vapoursynth/VSScript4.h>
+#include <VapourSynth4.h>
+#include <VSScript4.h>
 
 #include <exception>
 #include <iostream>

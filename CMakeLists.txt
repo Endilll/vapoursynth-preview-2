@@ -20,7 +20,7 @@ if (CMAKE_HOST_WIN32)
         IMPORTED_IMPLIB "${vapoursynth_SDK_PATH}/lib64/vapoursynth.lib"
     )
     target_include_directories(vapoursynth SYSTEM INTERFACE
-        "${vapoursynth_SDK_PATH}/include"
+        "${vapoursynth_SDK_PATH}/include/vapoursynth"
     )
 
     target_link_libraries(vapoursynth-preview-2 PRIVATE vapoursynth)
@@ -31,7 +31,7 @@ if (CMAKE_HOST_WIN32)
         IMPORTED_IMPLIB "${vapoursynth_SDK_PATH}/lib64/vsscript.lib"
     )
     target_include_directories(vapoursynth SYSTEM INTERFACE
-        "${vapoursynth_SDK_PATH}/include"
+        "${vapoursynth_SDK_PATH}/include/vapoursynth"
     )
 
     target_link_libraries(vapoursynth-preview-2 PRIVATE vapoursynth-script)
@@ -49,25 +49,16 @@ target_compile_definitions(vapoursynth-preview-2 PRIVATE ASIO_HAS_STD_INVOKE_RES
 
 find_package(elements REQUIRED)
 find_package(Microsoft.GSL REQUIRED)
-# include(FetchContent)
-# FetchContent_Declare(
-#     elements
-#     GIT_REPOSITORY https://github.com/cycfi/elements.git
-#     GIT_TAG ae7b87a8cc53258fac7d1d5a7b96da2994116dcf
-#     GIT_SUBMODULES_RECURSE on
-#     GIT_SHALLOW on
-# )
-# set(ELEMENTS_BUILD_EXAMPLES off)
-# FetchContent_MakeAvailable(elements)
-
 
 target_link_libraries(vapoursynth-preview-2 PRIVATE cycfi::elements)
 target_link_libraries(vapoursynth-preview-2 PRIVATE Microsoft.GSL::GSL)
 if (APPLE)
-    target_link_libraries(vapoursynth-preview-2 PRIVATE "-framework AppKit")
-    target_link_libraries(vapoursynth-preview-2 PRIVATE "-framework CoreFoundation")
-    target_link_libraries(vapoursynth-preview-2 PRIVATE "-framework CoreGraphics")
-    target_link_libraries(vapoursynth-preview-2 PRIVATE "-framework CoreText")
+    target_link_libraries(vapoursynth-preview-2 PRIVATE
+        "-framework AppKit"
+        "-framework CoreFoundation"
+        "-framework CoreGraphics"
+        "-framework CoreText"
+    )
 endif()
 
 if (NOT MSVC)

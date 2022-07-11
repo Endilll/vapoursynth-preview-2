@@ -17,7 +17,7 @@
             "type": "cppdbg",
             "request": "launch",
             "name": "Debug",
-            "program": "${workspaceFolder}/build-linux/Debug/vapoursynth-preview-2",
+            "program": "${workspaceFolder}/build-linux/vapoursynth-preview-2",
             "args": ["${workspaceFolder}/test/test.vpy"],
             "MIMode": "gdb",
             "cwd": "${workspaceFolder}",
