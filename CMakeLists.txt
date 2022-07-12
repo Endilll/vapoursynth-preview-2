@@ -47,8 +47,8 @@ endif()
 
 target_compile_definitions(vapoursynth-preview-2 PRIVATE ASIO_HAS_STD_INVOKE_RESULT)
 
-find_package(elements REQUIRED)
-find_package(Microsoft.GSL REQUIRED)
+find_package(elements CONFIG REQUIRED)
+find_package(Microsoft.GSL CONFIG REQUIRED)
 
 target_link_libraries(vapoursynth-preview-2 PRIVATE cycfi::elements)
 target_link_libraries(vapoursynth-preview-2 PRIVATE Microsoft.GSL::GSL)

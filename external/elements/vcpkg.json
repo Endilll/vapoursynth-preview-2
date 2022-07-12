@@ -2,8 +2,8 @@
     "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
     "name": "elements",
     "description": "Modern GUI library",
-    "version-string": "ae7b87a8cc53258fac7d1d5a7b96da2994116dcf",
-    "builtin-baseline": "8e1f46de11423e5f7d2395458f5252738ffffbbd",
+    "version-string": "6c8b6b51f9862982991ec4f15f1fffe782c4d096",
+    "builtin-baseline": "d769781d113bb1675fe4a1671f7f081f72afd722",
     "dependencies": [
         "asio",
         "cairo",
