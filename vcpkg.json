@@ -1,0 +1,18 @@
+{
+    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+    "name": "vapoursynth-preview-2",
+    "description": "Preview application for VapourSynth scripts",
+    "version-date": "2022-04-03",
+    "builtin-baseline": "5bb332b432e0fa3899de1a2ef8fc4c10c435408d",
+    "dependencies": [
+        {
+            "name": "imgui",
+            "features": [
+                "opengl3-binding",
+                "sdl2-binding"
+            ]
+        },
+        "ms-gsl",
+        "opengl"
+    ]
+}
