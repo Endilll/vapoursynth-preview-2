@@ -54,3 +54,6 @@ if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 else()
     target_link_libraries(vapoursynth-preview-2 PRIVATE vcpkg_installed/x64-windows-static-md/lib/manual-link/SDL2main)
 endif()
+
+find_package(GLEW REQUIRED)
+target_link_libraries(vapoursynth-preview-2 PRIVATE GLEW::GLEW)

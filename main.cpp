@@ -3,6 +3,8 @@
 #include <VapourSynth4.h>
 #include <VSScript4.h>
 
+#include <GL/glew.h>
+
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include <imgui_impl_opengl3.h>
@@ -13,13 +15,12 @@
 #include <SDL_opengl.h>
 #endif
 
+#include <chrono>
 #include <exception>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <string>
-
-// using namespace cycfi::elements;
 
 int main(int argc, char** argv) try
 {
@@ -68,6 +69,7 @@ int main(int argc, char** argv) try
 
     // Convert video format to RGB24
     VSCore* vs_core{vs_script_api->getCore(vs_script)};
+    vs_api->setMaxCacheSize(1*1024*1024*1024, vs_core);
     VSPlugin* pResizePlugin{vs_api->getPluginByID("com.vapoursynth.resize", vs_core)};
     VSMap* pArgumentMap{vs_api->createMap()};
     vs_api->mapSetNode(pArgumentMap, "clip", video_node, 0);
@@ -77,23 +79,43 @@ int main(int argc, char** argv) try
     VSNode* pPreviewNode{vs_api->mapGetNode(pResultMap, "clip", 0, nullptr)};
     vs_api->freeMap(pArgumentMap);
     vs_api->freeMap(pResultMap);
-    const VSFrame* video_frame{vs_api->getFrame(frame_number, pPreviewNode, nullptr, 0)};
-
+    const VSFrame* video_frame{vs_api->getFrame(0, pPreviewNode, nullptr, 0)};
 
     // Prepare video frame for elements
     int frame_width{vs_api->getFrameWidth(video_frame, 0)};
     int frame_height{vs_api->getFrameHeight(video_frame, 0)};
-    const uint8_t* frame_raw_plane_red{vs_api->getReadPtr(video_frame, 0)};
-    const uint8_t* frame_raw_plane_green{vs_api->getReadPtr(video_frame, 1)};
-    const uint8_t* frame_raw_plane_blue{vs_api->getReadPtr(video_frame, 2)};
 
-    unsigned char* surface_data = new unsigned char[frame_width*frame_height*4];
-    for (int i{0}; i < frame_width*frame_height*4; i += 4) {
-        surface_data[i] = frame_raw_plane_red[i/4];
-        surface_data[i+1] = frame_raw_plane_green[i/4];
-        surface_data[i+2] = frame_raw_plane_blue[i/4];
-        surface_data[i+3] = 255; // Alpha
-    }
+    auto get_frame = [&] (int frame_num, unsigned char*) {
+        const VSFrame* video_frame{vs_api->getFrame(frame_num, pPreviewNode, nullptr, 0)};
+
+        const uint8_t* frame_raw_plane_red{vs_api->getReadPtr(video_frame, 0)};
+        const uint8_t* frame_raw_plane_green{vs_api->getReadPtr(video_frame, 1)};
+        const uint8_t* frame_raw_plane_blue{vs_api->getReadPtr(video_frame, 2)};
+
+        GLuint buffer;
+        glGenBuffers(1, &buffer);
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer);
+        glBufferData(GL_PIXEL_UNPACK_BUFFER, frame_width*frame_height*4, nullptr, GL_STREAM_DRAW);
+        auto surface_data = static_cast<uint8_t*>(glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY));
+
+        // auto surface_data = std::make_unique<unsigned char[]>(frame_width*frame_height*4);
+        for (int i{0}; i < frame_width*frame_height*4; i += 4) {
+            surface_data[i] = frame_raw_plane_red[i/4];
+            surface_data[i+1] = frame_raw_plane_green[i/4];
+            surface_data[i+2] = frame_raw_plane_blue[i/4];
+            surface_data[i+3] = 255; // Alpha
+        }
+        // GLuint buffer;
+        // glGenBuffers(1, &buffer);
+        // glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer);
+        // glBufferData(GL_PIXEL_UNPACK_BUFFER, frame_width*frame_height*4, surface_data.get(), GL_STREAM_DRAW);
+
+        glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+        vs_api->freeFrame(video_frame);
+
+        return buffer;
+        // return surface_data;
+    };
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
     {
@@ -133,7 +155,7 @@ int main(int argc, char** argv) try
     SDL_Window* window = SDL_CreateWindow("Dear ImGui SDL2+OpenGL3 example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
     SDL_GLContext gl_context = SDL_GL_CreateContext(window);
     SDL_GL_MakeCurrent(window, gl_context);
-    SDL_GL_SetSwapInterval(1); // Enable vsync
+    SDL_GL_SetSwapInterval(0); // Enable vsync
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -150,28 +172,44 @@ int main(int argc, char** argv) try
     ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
+    GLenum err = glewInit();
+    if (GLEW_OK != err) {
+        /* Problem: glewInit failed, something is seriously wrong. */
+        std::cout << "Error: " << glewGetErrorString(err) << std::endl;
+        return 1;
+    }
+
+    if (!GLEW_VERSION_3_0) {
+        std::cout << "No OpenGL 3.0" << std::endl;
+        return 1;
+    }
+
     // Our state
     bool show_demo_window = true;
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-    GLuint image_texture;
-    glGenTextures(1, &image_texture);
-    glBindTexture(GL_TEXTURE_2D, image_texture);
+    // GLuint image_texture;
+    // glGenTextures(1, &image_texture);
+    // glBindTexture(GL_TEXTURE_2D, image_texture);
 
-    // Setup filtering parameters for display
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // This is required on WebGL for non power-of-two textures
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Same
+    // // Setup filtering parameters for display
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // This is required on WebGL for non power-of-two textures
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Same
 
-    #if defined(GL_UNPACK_ROW_LENGTH) && !defined(__EMSCRIPTEN__)
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+#if defined(GL_UNPACK_ROW_LENGTH) && !defined(__EMSCRIPTEN__)
+    // glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 #endif
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame_width, frame_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface_data);
+    // auto buffer = get_frame(0);
+    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame_width, frame_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer.get());
+    // glDeleteBuffers(1, &buffer);
 
     // Main loop
     bool done = false;
+    int frame_num{0};
+    auto surface_data = std::make_unique<unsigned char[]>(frame_width*frame_height*4);
     while (!done)
     {
         // Poll and handle events (inputs, window resize, etc.)
@@ -194,7 +232,22 @@ int main(int argc, char** argv) try
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
+        GLuint image_texture;
         {
+            glGenTextures(1, &image_texture);
+            glBindTexture(GL_TEXTURE_2D, image_texture);
+
+            // Setup filtering parameters for display
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // This is required on WebGL for non power-of-two textures
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Same
+            auto buffer = get_frame(frame_num, surface_data.get());
+            ++frame_num;
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame_width, frame_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            glDeleteBuffers(1, &buffer);
+
+
             ImGui::Begin("OpenGL Texture Text");
             ImGui::Text("pointer = %p", &image_texture);
             ImGui::Text("size = %d x %d", frame_width, frame_height);
@@ -247,7 +300,11 @@ int main(int argc, char** argv) try
         glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        glDeleteTextures(1, &image_texture);
+        // auto a1 = std::chrono::high_resolution_clock::now();
         SDL_GL_SwapWindow(window);
+        // auto a2 = std::chrono::high_resolution_clock::now();
+        // std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(a2 - a1) << "\n";
     }
 
     // Cleanup

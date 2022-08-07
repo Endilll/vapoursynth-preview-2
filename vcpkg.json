@@ -5,6 +5,7 @@
     "version-date": "2022-04-03",
     "builtin-baseline": "5bb332b432e0fa3899de1a2ef8fc4c10c435408d",
     "dependencies": [
+        "glew",
         {
             "name": "imgui",
             "features": [
